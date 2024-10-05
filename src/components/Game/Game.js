@@ -1,48 +1,59 @@
-import React, { useState } from "react";
-
+import { useEffect, useState } from "react";
 import GameLayout from "./GameLayout";
+import { store } from "../../store";
+import { getRandomNumber } from "../../utils/randomNumber";
 
-const Game = (props) => {
-	const [currentPlayer, setCurrentPlayer] = useState("X");
-	const [isGameEnded, setIsGameEnded] = useState(false);
-	const [isDraw, setIsDraw] = useState(false);
-	const [field, setField] = useState(["", "", "", "", "", "", "", "", ""]);
+const getField = () => ["", "", "", "", "", "", "", "", ""];
 
-	const WIN_PATTERNS = [
-		[0, 1, 2],
-		[3, 4, 5],
-		[6, 7, 8],
-		[0, 3, 6],
-		[1, 4, 7],
-		[2, 5, 8],
-		[0, 4, 8],
-		[2, 4, 6],
-	];
+const Game = () => {
+	const [state, setState] = useState(store.getState());
 
-	let isDrawValue;
-	if (isDraw) {
-		isDrawValue = `Ничья`;
-	}
-	if (!isDraw && isGameEnded) {
-		isDrawValue = `Победа: ${currentPlayer}`;
-	}
-	if (!isDraw && !isGameEnded) {
-		isDrawValue = `Ходит: ${currentPlayer}`;
-	}
+	useEffect(() => {
+		const unsubscribe = store.subscribe(() => setState(store.getState()));
+		return unsubscribe;
+	}, []);
+	//Установка первоначального поля
+	useEffect(() => {
+		const field = getField();
 
-	return (
-		<GameLayout
-			field={field}
-			setField={setField}
-			isDrawValue={isDrawValue}
-			currentPlayer={currentPlayer}
-			setCurrentPlayer={setCurrentPlayer}
-			WIN_PATTERNS={WIN_PATTERNS}
-			setIsGameEnded={setIsGameEnded}
-			isGameEnded={isGameEnded}
-			setIsDraw={setIsDraw}
-		/>
-	);
+		store.dispatch({ type: "SET_FIELD", payload: field });
+	}, []);
+	//Установка первого игрока
+	useEffect(() => {
+		const randomNumber = getRandomNumber();
+		store.dispatch({
+			type: "SET_CURRENT_PLAYER",
+			payload: (state.currentPlayer = randomNumber === 1 ? "X" : "O"),
+		});
+	}, []);
+	//Установка текстового статуса игры
+	useEffect(() => {
+		const changingGameValue = () => {
+			let stateOfGameValue;
+
+			if (state.isDraw) {
+				stateOfGameValue = `Ничья`;
+				store.dispatch({ type: "SET_STATE_GAME_VALUE", payload: stateOfGameValue });
+			}
+			if (!state.isDraw && state.isGameEnded) {
+				stateOfGameValue = `Победа ${state.currentPlayer}`;
+				store.dispatch({
+					type: "SET_STATE_GAME_VALUE",
+					payload: stateOfGameValue,
+				});
+			}
+			if (!state.isDraw && !state.isGameEnded) {
+				stateOfGameValue = `Ходит ${state.currentPlayer}`;
+				store.dispatch({
+					type: "SET_STATE_GAME_VALUE",
+					payload: stateOfGameValue,
+				});
+			}
+		};
+		changingGameValue();
+	}, [state.isDraw, state.isGameEnded, state.currentPlayer]);
+
+	return <GameLayout />;
 };
 
 export default Game;

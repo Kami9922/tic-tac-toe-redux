@@ -1,58 +1,30 @@
 import React from "react";
-import PropTypes from "prop-types";
 import Information from "../Information/Information";
 import Field from "../Field/Field";
 import styles from "./../../css/game.module.css";
+import { store } from "../../store";
 
-const GameLayout = ({
-	isDrawValue,
-	field,
-	currentPlayer,
-	setCurrentPlayer,
-	setField,
-	WIN_PATTERNS,
-	setIsGameEnded,
-	isGameEnded,
-	setIsDraw,
-}) => {
+const GameLayout = () => {
 	return (
 		<div>
-			<Information isDrawValue={isDrawValue} />
-			<Field
-				field={field}
-				setField={setField}
-				currentPlayer={currentPlayer}
-				setCurrentPlayer={setCurrentPlayer}
-				WIN_PATTERNS={WIN_PATTERNS}
-				setIsGameEnded={setIsGameEnded}
-				isGameEnded={isGameEnded}
-				setIsDraw={setIsDraw}
-			/>
+			<Information />
+			<Field />
 			<div
 				className={styles["reset-button"]}
 				onClick={() => {
-					setCurrentPlayer("X");
-					setField(["", "", "", "", "", "", "", "", ""]);
-					setIsDraw(false);
-					setIsGameEnded(false);
+					store.dispatch({ type: "SET_CURRENT_PLAYER", payload: "X" });
+					store.dispatch({
+						type: "SET_FIELD",
+						payload: ["", "", "", "", "", "", "", "", ""],
+					});
+					store.dispatch({ type: "SET_IS_DRAW", payload: false });
+					store.dispatch({ type: "SET_IS_GAME_ENDED", payload: false });
 				}}
 			>
 				Начать заново
 			</div>
 		</div>
 	);
-};
-
-GameLayout.propTypes = {
-	field: PropTypes.array,
-	setField: PropTypes.func,
-	isDrawValue: PropTypes.string,
-	currentPlayer: PropTypes.string,
-	setCurrentPlayer: PropTypes.func,
-	WIN_PATTERNS: PropTypes.array,
-	isGameEnded: PropTypes.bool,
-	setIsGameEnded: PropTypes.func,
-	setIsDraw: PropTypes.func,
 };
 
 export default GameLayout;

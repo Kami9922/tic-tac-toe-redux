@@ -1,19 +1,20 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React, { useEffect, useState } from "react";
 import styles from "./../../css/information.module.css";
+import { store } from "../../store";
 
-const InformationLayout = ({ isDrawValue }) => {
+const InformationLayout = () => {
+	const [state, setState] = useState(store.getState());
+	useEffect(() => {
+		const unsubscribe = store.subscribe(() => setState(store.getState()));
+		return unsubscribe;
+	}, []);
 	return (
 		<div
-			className={`${styles.information} ${isDrawValue.includes(`Победа`) ? styles["information-win"] : ""}`}
+			className={`${styles.information} ${state.stateOfGameValue === `Победа` ? styles["information-win"] : ""}`}
 		>
-			{isDrawValue}
+			{state.stateOfGameValue}
 		</div>
 	);
-};
-
-InformationLayout.propTypes = {
-	isDrawValue: PropTypes.string,
 };
 
 export default InformationLayout;

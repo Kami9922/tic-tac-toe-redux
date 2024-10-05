@@ -1,44 +1,46 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React, { useEffect, useState } from "react";
 import styles from "./../../css/field.module.css";
+import { store } from "../../store";
+import { WIN_PATTERNS } from "../../constants";
 
-const FieldLayout = ({
-	field,
-	setField,
-	currentPlayer,
-	setCurrentPlayer,
-	WIN_PATTERNS,
-	setIsGameEnded,
-	isGameEnded,
-	setIsDraw,
-}) => {
+const FieldLayout = () => {
+	const [state, setState] = useState(store.getState());
+
+	useEffect(() => {
+		const unsubscribe = store.subscribe(() => setState(store.getState()));
+		return unsubscribe;
+	}, []);
+
 	const checkForDraw = (arrayToCheck) => {
 		if (!arrayToCheck.includes("")) {
-			setIsGameEnded(true);
-			setIsDraw(true);
+			store.dispatch({ type: "SET_IS_GAME_ENDED", payload: true });
+			store.dispatch({ type: "SET_IS_DRAW", payload: true });
 		}
 	};
 
 	return (
 		<div className={styles.field}>
-			{field.map((item, index) => {
+			{state.field?.map((item, index) => {
 				return (
 					<div
 						key={index}
 						className={styles["game-sector"]}
 						onClick={() => {
-							if (!isGameEnded && field[index] === "") {
-								const newField = [...field];
-								newField[index] = currentPlayer;
-								setField(newField);
+							if (!state.isGameEnded && state.field[index] === "") {
+								const newField = [...state.field];
+								newField[index] = state.currentPlayer;
+								store.dispatch({ type: "SET_FIELD", payload: newField });
 								if (
 									WIN_PATTERNS.some((pattern) =>
-										pattern.every((index) => newField[index] === currentPlayer),
+										pattern.every((index) => newField[index] === state.currentPlayer),
 									)
 								) {
-									setIsGameEnded(true);
+									store.dispatch({ type: "SET_IS_GAME_ENDED", payload: true });
 								} else {
-									setCurrentPlayer(currentPlayer === "X" ? "O" : "X");
+									store.dispatch({
+										type: "SET_CURRENT_PLAYER",
+										payload: state.currentPlayer === "X" ? "O" : "X",
+									});
 									checkForDraw(newField);
 								}
 							}
@@ -50,17 +52,6 @@ const FieldLayout = ({
 			})}
 		</div>
 	);
-};
-
-FieldLayout.propTypes = {
-	field: PropTypes.array,
-	setField: PropTypes.func,
-	currentPlayer: PropTypes.string,
-	setCurrentPlayer: PropTypes.func,
-	WIN_PATTERNS: PropTypes.array,
-	isGameEnded: PropTypes.bool,
-	setIsGameEnded: PropTypes.func,
-	setIsDraw: PropTypes.func,
 };
 
 export default FieldLayout;
